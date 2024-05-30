@@ -23,9 +23,10 @@ using std::string;
 // TODO: python-like comments with "#"
 
 /** global functions **/
+
 #define print(o) std::cout << static_cast<std::string>(o) << std::endl
 #define len(o)  o.size()
-#define type(o) typeid(o).name()  // 2FIX: returned value is implementation-defined  http://www.cplusplus.com/reference/typeinfo/type_info/name/
+//#define type(o) typeid(o).name()  // 2FIX: returned value is implementation-defined  http://www.cplusplus.com/reference/typeinfo/type_info/name/
 //TODO: #define cmp(o1, o2)   # Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
 
 /*
@@ -141,6 +142,248 @@ private:
 	void _assertValidSize()const{
 		assert(size());
 	}	
+};
+
+
+#include <boost/any.hpp>
+#include <vector>
+#include <stdexcept>
+#include <algorithm>
+#include <iostream>
+#include <typeinfo>
+
+/*
+class List {
+private:
+    std::vector<boost::any> data;
+
+public:
+    // Default constructor
+    List() = default;
+
+    // Constructor with initializer list
+    List(std::initializer_list<boost::any> init) : data(init) {}
+
+    // Copy constructor
+    List(const List& other) : data(other.data) {}
+
+    // Template method to append different types
+    template <typename T>
+    void append(const T& value) {
+        data.push_back(value);
+    }
+
+    // Removes the first occurrence of a value
+    void remove(const boost::any& value) {
+        auto it = std::find_if(data.begin(), data.end(), 
+                               [&value](const boost::any& elem) { return elem == value; });
+        if (it != data.end()) {
+            data.erase(it);
+        } else {
+            throw std::runtime_error("Value not found in list");
+        }
+    }
+
+    // Returns the element at a specific index
+    boost::any& operator[](std::size_t index) {
+        if (index >= data.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return data[index];
+    }
+
+    // Returns the element at a specific index (const version)
+    const boost::any& operator[](std::size_t index) const {
+        if (index >= data.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return data[index];
+    }
+
+    // Returns the number of elements in the list
+    std::size_t size() const {
+        return data.size();
+    }
+
+    // Clears all elements from the list
+    void clear() {
+        data.clear();
+    }
+
+    // Checks if the list is empty
+    bool empty() const {
+        return data.empty();
+    }
+
+    // Returns an iterator to the beginning of the list
+    std::vector<boost::any>::iterator begin() {
+        return data.begin();
+    }
+
+    // Returns a const iterator to the beginning of the list
+    std::vector<boost::any>::const_iterator begin() const {
+        return data.begin();
+    }
+
+    // Returns an iterator to the end of the list
+    std::vector<boost::any>::iterator end() {
+        return data.end();
+    }
+
+    // Returns a const iterator to the end of the list
+    std::vector<boost::any>::const_iterator end() const {
+        return data.end();
+    }
+
+    // Overload + operator to concatenate two List objects
+    List operator+(const List& other) const {
+        List result = *this;
+        result.data.insert(result.data.end(), other.data.begin(), other.data.end());
+        return result;
+    }
+};
+*/
+
+#include <unordered_map>
+#include <boost/any.hpp>
+#include <string>
+#include <stdexcept>
+#include <vector>
+#include <initializer_list>
+#include <iostream>
+
+class Dict {
+public:
+    // Default constructor
+    Dict() = default;
+
+    // Constructor with initializer list
+    Dict(std::initializer_list<std::pair<const std::string, boost::any>> init) : data(init) {}
+
+    // Set item
+    template<typename T>
+    void setitem(const std::string& key, const T& value) {
+        data[key] = value;
+    }
+
+    // Get item with default value
+    template<typename T>
+    T get(const std::string& key, const T& default_value = T()) const {
+        auto it = data.find(key);
+        if (it != data.end()) {
+            return boost::any_cast<T>(it->second);
+        } else {
+            return default_value;
+        }
+    }
+
+    // Delete item
+    void delitem(const std::string& key) {
+        auto it = data.find(key);
+        if (it != data.end()) {
+            data.erase(it);
+        } else {
+            throw std::out_of_range("Key not found: " + key);
+        }
+    }
+
+    // Check if a key exists
+    bool has_key(const std::string& key) const {
+        return data.find(key) != data.end();
+    }
+
+    // Get all keys
+    std::vector<std::string> keys() const {
+        std::vector<std::string> result;
+        for (const auto& pair : data) {
+            result.push_back(pair.first);
+        }
+        return result;
+    }
+
+    // Get all values
+    std::vector<boost::any> values() const {
+        std::vector<boost::any> result;
+        for (const auto& pair : data) {
+            result.push_back(pair.second);
+        }
+        return result;
+    }
+
+    // Get all items
+    std::vector<std::pair<std::string, boost::any>> items() const {
+        std::vector<std::pair<std::string, boost::any>> result;
+        for (const auto& pair : data) {
+            result.push_back(pair);
+        }
+        return result;
+    }
+
+    // Size of the dictionary
+    size_t size() const {
+        return data.size();
+    }
+
+    // Clear the dictionary
+    void clear() {
+        data.clear();
+    }
+
+    // Operator []
+    boost::any& operator[](const std::string& key) {
+        return data[key];
+    }
+
+    const boost::any& operator[](const std::string& key) const {
+        auto it = data.find(key);
+        if (it == data.end()) {
+            throw std::out_of_range("Key not found: " + key);
+        }
+        return it->second;
+    }
+
+    // Update dictionary with another dictionary or initializer list
+    void update(const Dict& other) {
+        for (const auto& pair : other.data) {
+            data[pair.first] = pair.second;
+        }
+    }
+
+    void update(std::initializer_list<std::pair<const std::string, boost::any>> init) {
+        for (const auto& pair : init) {
+            data[pair.first] = pair.second;
+        }
+    }
+
+    // Pop item with key, return value, throw exception if key not found
+    template<typename T>
+    T pop(const std::string& key) {
+        auto it = data.find(key);
+        if (it != data.end()) {
+            T value = boost::any_cast<T>(it->second);
+            data.erase(it);
+            return value;
+        } else {
+            throw std::out_of_range("Key not found: " + key);
+        }
+    }
+
+    // Pop item with key, return value or default if key not found
+    template<typename T>
+    T pop(const std::string& key, const T& default_value) {
+        auto it = data.find(key);
+        if (it != data.end()) {
+            T value = boost::any_cast<T>(it->second);
+            data.erase(it);
+            return value;
+        } else {
+            return default_value;
+        }
+    }
+    
+
+private:
+    std::unordered_map<std::string, boost::any> data;
 };
 
 
