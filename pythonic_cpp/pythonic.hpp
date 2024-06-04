@@ -24,7 +24,33 @@ using std::string;
 
 /** global functions **/
 
-#define print(o) std::cout << static_cast<std::string>(o) << std::endl
+//#define print(o) std::cout << static_cast<std::string>(o) << std::endl
+#include <string>
+#include <boost/any.hpp>
+#include <any>
+
+void print(const char* value) {
+    std::cout << value << std::endl;
+}
+template <typename T>
+void print(const T& value) {
+    std::cout << value << std::endl;
+}
+void print(const std::any& value) {
+    try {
+        print(std::any_cast<std::string>(value));
+    } catch(const std::bad_any_cast&) {
+        std::cout << "Unsupported type" << std::endl;
+    }
+}
+void print(const boost::any& value) {
+    try {
+        print(boost::any_cast<std::string>(value));
+    } catch(const boost::bad_any_cast&) {
+        std::cout << "Unsupported type" << std::endl;
+    }
+}
+
 #define len(o)  o.size()
 //#define type(o) typeid(o).name()  // 2FIX: returned value is implementation-defined  http://www.cplusplus.com/reference/typeinfo/type_info/name/
 //TODO: #define cmp(o1, o2)   # Compare the two objects x and y and return an integer according to the outcome. The return value is negative if x < y, zero if x == y and strictly positive if x > y.
@@ -144,7 +170,7 @@ private:
 	}	
 };
 
-
+/*
 #include <boost/any.hpp>
 #include <vector>
 #include <stdexcept>
@@ -152,7 +178,7 @@ private:
 #include <iostream>
 #include <typeinfo>
 
-/*
+
 class List {
 private:
     std::vector<boost::any> data;
@@ -252,23 +278,24 @@ public:
 #include <initializer_list>
 #include <iostream>
 
-class Dict {
+class dict {
 public:
     // Default constructor
-    Dict() = default;
+    dict() = default;
 
     // Constructor with initializer list
-    Dict(std::initializer_list<std::pair<const std::string, boost::any>> init) : data(init) {}
+    dict(std::initializer_list<std::pair<const std::string, boost::any>> init) : data(init) {}
 
+	/*
     // Set item
     template<typename T>
     void setitem(const std::string& key, const T& value) {
         data[key] = value;
-    }
+    }*/
 
     // Get item with default value
     template<typename T>
-    T get(const std::string& key, const T& default_value = T()) const {
+    T get(const str& key, const T& default_value = T()) const {
         auto it = data.find(key);
         if (it != data.end()) {
             return boost::any_cast<T>(it->second);
@@ -276,9 +303,9 @@ public:
             return default_value;
         }
     }
-
+	
     // Delete item
-    void delitem(const std::string& key) {
+    void del(const str& key) {
         auto it = data.find(key);
         if (it != data.end()) {
             data.erase(it);
@@ -288,7 +315,7 @@ public:
     }
 
     // Check if a key exists
-    bool has_key(const std::string& key) const {
+    bool has_key(const str& key) const {
         return data.find(key) != data.end();
     }
 
@@ -343,7 +370,7 @@ public:
     }
 
     // Update dictionary with another dictionary or initializer list
-    void update(const Dict& other) {
+    void update(const dict& other) {
         for (const auto& pair : other.data) {
             data[pair.first] = pair.second;
         }
@@ -357,7 +384,7 @@ public:
 
     // Pop item with key, return value, throw exception if key not found
     template<typename T>
-    T pop(const std::string& key) {
+    T pop(const str& key) {
         auto it = data.find(key);
         if (it != data.end()) {
             T value = boost::any_cast<T>(it->second);
@@ -370,7 +397,7 @@ public:
 
     // Pop item with key, return value or default if key not found
     template<typename T>
-    T pop(const std::string& key, const T& default_value) {
+    T pop(const str& key, const T& default_value) {
         auto it = data.find(key);
         if (it != data.end()) {
             T value = boost::any_cast<T>(it->second);
@@ -381,7 +408,6 @@ public:
         }
     }
     
-
 private:
     std::unordered_map<std::string, boost::any> data;
 };

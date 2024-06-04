@@ -15,8 +15,9 @@ int main()
 	//print( len(s) ) ;
 	print( s.upper() ); 
 	print( s.lower() ); 
+	print( "literal str" ); 
 	
-	/*
+/*
 	List l = {1, 2, 3, "four"};
 
     // Access elements using operator[]
@@ -50,80 +51,59 @@ int main()
         std::cout << "[unknown type]" << std::endl;
     }*/
 
-	
 	// dict tests
-Dict dict;
-    dict["key1"] = 123;
-    dict["key2"] = std::string("value");
-
+	dict d;
+    d["key1"] = 123;
+    d["key2"] = "str value";
+    print(d["key2"]);
+    
     // Using initializer list constructor
-    Dict dict2 = {{"key3", 456}, {"key4", std::string("another value")}};
+    dict d2 = {{"key3", 456}, {"key4", std::string("another value")}};
 
     // Using update method
-    dict.update(dict2);
-    dict.update({{"key5", 789}, {"key6", std::string("yet another value")}});
+    d.update(d2);
+    d.update({{"key5", 789}, {"key6", std::string("yet another value")}});
 
-    try {
-        int value1 = dict.get<int>("key1");
-        std::string value2 = dict.get<std::string>("key2");
-        int value3 = dict.get<int>("key3");
-        std::cout << "key1: " << value1 << "\n";
-        std::cout << "key2: " << value2 << "\n";
-        std::cout << "key3: " << value3 << "\n";
-    } catch (const boost::bad_any_cast& e) {
-        std::cerr << "Bad any cast: " << e.what() << "\n";
-    }
+	auto value1 = d["key1"];
+	print(value1);
+	printf("%d", value1);
+	//value1 = d.get("key1");
+	//printf("%d", value1);
+	auto value2 = d["key2"];
+	auto value3 = d["key3"];
+	print(value2);
+	print(value3);
+	//std::cout << "key1: " << value1 << "\n";  // using cout req. explicit casting
 
-    if (dict.has_key("key1")) {
+    if (d.has_key("key1")) {
         std::cout << "Contains key1\n";
-        //dict.pop("key1", "da");
+        //d.pop("key1", "da");
     }
 
-
-    auto keys = dict.keys();
-    auto values = dict.values();
-    auto items = dict.items();
-
-    for (const auto& key : keys) {
-        std::cout << "Key: " << key << "\n";
+    for (auto k : d.keys()) {
+        print(k);
     }
 
-    for (const auto& value : values) {
-        try {
-            std::cout << "Value: " << boost::any_cast<std::string>(value) << "\n";
-        } catch (const boost::bad_any_cast&) {
-            std::cout << "Value: [non-string value]\n";
-        }
+    for (auto v : d.values()) {
+        print(v);
     }
 
-    for (const auto& item : items) {
-        std::cout << "Item: " << item.first << " = ";
-        try {
-            std::cout << boost::any_cast<std::string>(item.second) << "\n";
-        } catch (const boost::bad_any_cast&) {
-            std::cout << "[non-string value]\n";
-        }
-    }
-
-    std::cout << "Size: " << dict.size() << "\n";
-    dict.clear();
-    std::cout << "Size after clear: " << dict.size() << "\n";
-
-    // Accessing elements in dict2
-    try {
-        int value3 = dict2.get<int>("key3");
-        std::string value4 = dict2.get<std::string>("key4");
-        std::cout << "key3: " << value3 << "\n";
-        std::cout << "key4: " << value4 << "\n";
-    } catch (const boost::bad_any_cast& e) {
-        std::cerr << "Bad any cast: " << e.what() << "\n";
+    for (auto i : d.items()) {
+        print(i.first);
+        print(i.second);
     }
 
     // Using pop method
-    int popped_value = dict.pop<int>("key3", -1);
-    std::cout << "Popped key3: " << popped_value << "\n";
-    popped_value = dict.pop<int>("key7", -1); // key7 does not exist
-    std::cout << "Popped key7 (default): " << popped_value << "\n";
+    auto popped_value = d.pop("key3", -1);
+    print("popped_value:");
+    print(popped_value);
+    //popped_value = d.pop("key7"); // key7 does not exist -> check exception
+
+    print("Size: ");
+    print(d.size());
+    d.clear();
+    print(d.size());
+
 
 
 }
